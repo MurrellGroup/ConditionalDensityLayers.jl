@@ -1,0 +1,50 @@
+#using Plots, Distributions, StatsBase
+
+mutable struct ConditionalDensityArena
+    manifoldD::Int
+    SD::Int #The S dimension
+    mixK::Int #Number of components in the distribution
+    outputD::Int #Dimension of the domain of the distribution
+    eW::Matrix{Float64}
+    dW::Matrix{Float64}
+    function ConditionalDensityArena(manifoldD, SD, mixK, outputD)
+        #These two matrices fully encode the structure of the mapping, which is Fourier-ish
+        eW = randn(manifoldD, SD ÷ 2)
+        dW = randn(SD,2mixK + mixK*outputD) #weights, iso stds (per component), plus one outputD mu for each component
+        return new(manifoldD, SD, mixK, outputD,eW,dW)
+    end
+end
+
+stan(x) = x ./ sum(x)
+
+sensible_t(x) = log(exp(x) + 1.5) #Transform to sensible positive range
+
+#Fourier-ish from low dim manifold to S
+function lowD2S(X, cdg::ConditionalDensityArena)
+    eWtX = cdg.eW'X
+    return [cos.(eWtX); sin.(eWtX)]
+end
+
+function sample_isoGNN(w,mus,std)
+    c = sample(1:length(w),StatsBase.Weights(w))
+    mus[:,c] .+ (randn(length(mus[:,c])) .* std[c])
+end
+
+function sample_from_conditional_density(S,n,cdg::ConditionalDensityArena)
+   theta = cdg.dW'S
+    samps = []
+    for i in 1:size(theta,2)
+        v = theta[:,i]
+        w = stan(exp.(v[end-2cdg.mixK+1:end-cdg.mixK] ./ 2))
+        stds = sensible_t.(v[end-cdg.mixK+1:end]) .* 3
+        mus = reshape(v[1:cdg.mixK*cdg.outputD],cdg.outputD,cdg.mixK)
+        push!(samps,stack([sample_isoGNN(w,mus,stds) for k in 1:n]))
+    end
+    return samps
+end
+
+function conditional_distribution(S,cdg::ConditionalDensityArena)
+    #To do - not used for training, but will be needed to validate
+    #Returns the distribution equivalent to what is sampled from in sample_from_conditional_density(...)
+    #Should return a Julia distribution
+end
