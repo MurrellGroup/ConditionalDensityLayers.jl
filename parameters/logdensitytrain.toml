@@ -1,0 +1,22 @@
+[hyperparameters]
+num_embeddings = 64
+num_hidden_layers = 2
+activation_function = "relu"
+
+[trainingparameters]
+run_on_gpu = 1
+num_epochs = 1
+montecarlo_n = 10
+
+[datageneration]
+manifold_dimension = 2
+S_dimension = 32
+distribution_component_count = 100
+output_dimension = 2
+num_obs = 10
+split_at = 0.8
+batch_size = 10
+intervals = [ [-10, 10], [-10, 10] ]
+
+[misc]
+experimentID = "LogDensityLayer_v0"
