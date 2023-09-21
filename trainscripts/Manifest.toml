@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "aac062e0ae5953b98d1f4ee16da392f84311c440"
+project_hash = "eec6d4041da1e7e342362c14dea8c5c1faf426fd"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -33,6 +33,16 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
+
+[[deps.ArrayLayouts]]
+deps = ["FillArrays", "LinearAlgebra"]
+git-tree-sha1 = "0d61921af2799487b80453a44abb57db7a0c1381"
+uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
+version = "1.4.1"
+weakdeps = ["SparseArrays"]
+
+    [deps.ArrayLayouts.extensions]
+    ArrayLayoutsSparseArraysExt = "SparseArrays"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -221,7 +231,7 @@ version = "2.2.1"
 
 [[deps.ConditionalDensityLayers]]
 deps = ["Flux", "Random", "StatsBase"]
-path = "C:\\Users\\arons\\.julia\\dev\\ConditionalDensityLayers"
+path = "/Users/aron/.julia/dev/ConditionalDensityLayers"
 uuid = "e5962c11-610b-40b9-b00c-310314db9149"
 version = "1.0.0-DEV"
 
@@ -534,6 +544,21 @@ git-tree-sha1 = "eac00994ce3229a464c2847e956d77a2c64ad3a5"
 uuid = "7869d1d1-7146-5819-86e3-90919afe41df"
 version = "0.4.10"
 
+[[deps.InfiniteArrays]]
+deps = ["ArrayLayouts", "FillArrays", "Infinities", "LazyArrays", "LinearAlgebra"]
+git-tree-sha1 = "e61675cbcf3ce57ea3566b0abcfe46e4a521bf6f"
+uuid = "4858937d-0d70-526a-a4dd-2d5cb5dd786c"
+version = "0.12.15"
+weakdeps = ["Statistics"]
+
+    [deps.InfiniteArrays.extensions]
+    InfiniteArraysStatisticsExt = "Statistics"
+
+[[deps.Infinities]]
+git-tree-sha1 = "83fc1771340f16ec9da174ba39c83efc605251db"
+uuid = "e1ba4f0e-776d-440f-acd9-e1d2e9742647"
+version = "0.1.7"
+
 [[deps.InitialValues]]
 git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
 uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
@@ -649,6 +674,16 @@ version = "0.16.1"
     [deps.Latexify.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[[deps.LazyArrays]]
+deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra", "MacroTools", "MatrixFactorizations", "SparseArrays"]
+git-tree-sha1 = "80e1594bc9e58e0c889c0cc3b9e4374cee9ec9b1"
+uuid = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+version = "1.8.0"
+weakdeps = ["StaticArrays"]
+
+    [deps.LazyArrays.extensions]
+    LazyArraysStaticArraysExt = "StaticArrays"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -773,6 +808,12 @@ version = "0.5.11"
 [[deps.Markdown]]
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
+
+[[deps.MatrixFactorizations]]
+deps = ["ArrayLayouts", "LinearAlgebra", "Printf", "Random"]
+git-tree-sha1 = "78f6e33434939b0ac9ba1df81e6d005ee85a7396"
+uuid = "a3b82374-2e81-5b9e-98ce-41277c0e4c87"
+version = "2.1.0"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "Random", "Sockets"]
@@ -908,6 +949,12 @@ deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
 git-tree-sha1 = "67eae2738d63117a196f497d7db789821bce61d1"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.17"
+
+[[deps.ParameterSchedulers]]
+deps = ["Flux", "InfiniteArrays"]
+git-tree-sha1 = "c1e016a96afc915cb04eed77f4b261532948e841"
+uuid = "d7d3b36b-41b8-4d0d-a2bf-768c6151755e"
+version = "0.3.6"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
