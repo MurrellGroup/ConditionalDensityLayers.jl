@@ -1,22 +1,23 @@
 [hyperparameters]
-num_embeddings = 64
-num_hidden_layers = 2
+num_embeddings = 32
+num_hidden_layers = 1
 activation_function = "relu"
 
 [trainingparameters]
-run_on_gpu = 1
-num_epochs = 1
-montecarlo_n = 10
+run_on_gpu = 0
+montecarlo_n = 10 # per dimension
+#etas = [0.1, 0.01, 0.001]
+#epochs_per_eta = [5, 5, 5]
 
 [datageneration]
 manifold_dimension = 2
 S_dimension = 32
 distribution_component_count = 100
 output_dimension = 2
-num_obs = 10
-split_at = 0.8
-batch_size = 10
-intervals = [ [-10, 10], [-10, 10] ]
+num_obs = 50000
+split_at = 0.9
+intervals = [ [-50, 50], [-50, 50] ]
 
 [misc]
 experimentID = "LogDensityLayer_v0"
+plot_sample_size = 1000
