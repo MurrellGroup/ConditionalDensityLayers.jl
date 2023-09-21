@@ -1,4 +1,4 @@
-module GaussianMixtureLayers
+module VonMisesMixtureLayers
 
 using Flux
 using LinearAlgebra
