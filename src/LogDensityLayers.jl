@@ -6,7 +6,61 @@ import StatsBase
 
 export LogDensityLayer
 
-# Add a point a encoder and a condition encoder, or just a condition encoder
+# MonteCarlo utils
+"""
+
+"""
+abstract type AbstractMonteCarloMethod end
+
+"""
+Sample uniformly from each group in `subgroups` and weight the samples by `weights`.
+"""
+struct WeightedSubgroupMonteCarlo <: AbstractMonteCarloMethod
+	subgroups
+	weights # weights[i] correspond to subgroup i
+end
+
+uniform_montecarlo(intervals) = WeightedSubgroupMonteCarlo([intervals], ones(eltype(intervals), 1))
+
+function stratified_montecarlo(intervals, subgroups_per_dim)
+	interval_infimums = first.(intervals)
+	interval_supremums = last.(intervals)
+	
+	T = eltype(interval_infimums)
+	# Number of dimensions
+    dim = length(intervals)
+
+    # Calculate width of each stratum for each dimension
+    widths = [(supremums[i] - infimums[i]) / strata_count for i in 1:dim]
+
+    # Compute the sub-intervals for each dimension
+    intervals = [[(infimums[i] + (j-1) * widths[i], infimums[i] + j * widths[i]) for j in 1:strata_count] for i in 1:dim]
+
+    # Create combinations of intervals for each subgroup
+    subgroups = []
+    for combo in Iterators.product(intervals...)
+        infimums_group = T[elem[1] for elem in combo]
+        supremums_group = T[elem[2] for elem in combo]
+        subgroup = [infimums_group, supremums_group]
+        push!(subgroups, subgroup)
+    end
+
+    return WeightedSubgroupMonteCarlo(subgroups, ones(T, length(subgroups)))
+end
+
+weighted_subgroup_montecarlo(subgroups, weights) = WeightedSubgroupMonteCarlo(subgroups, weights)
+
+uniformrand(T::Type, infimums, supremums) = infimums .+ rand(T, length(infimums)) .* (supremums .- infimums)
+
+uniformrand(T::Type, infimums, supremums, n) = reduce(hcat, [uniformrand(T, infimums, supremums) for _ in 1:n])
+
+sample(montecarlo_method::WeightedSubgroupMonteCarlo, args...) = (infs_sups -> uniformrand(infs_sups..., args...)).(montecarlo_method.subgroups)
+
+weightanswers(montecarlo_method::WeightedSubgroupMonteCarlo, answers) = answers .* montecarlo_method.weights
+
+# LogDensityLayer
+
+#TODO: add a pointencoder and a conditionencoder, and replace interval_infimums and interval_supremums to a montecarlorng
 struct LogDensityLayer <: AbstractConditionalDensityLayer
     interval_infimums
     interval_supremums
@@ -38,28 +92,6 @@ domainvolume(l::LogDensityLayer) = prod(l.interval_supremums .- l.interval_infim
 uniformrand(T::Type, infimums, supremums) = infimums .+ rand(T, length(infimums)) .* (supremums .- infimums)
 
 uniformrand(T::Type, infimums, supremums, n) = reduce(hcat, [uniformrand(T, infimums, supremums) for _ in 1:n])
-
-function stratified_subgroups(supremums, infimums, strata_count)
-    # Number of dimensions
-    dim = length(supremums)
-       
-    # Calculate width of each stratum for each dimension
-    widths = [(supremums[i] - infimums[i]) / strata_count for i in 1:dim]
-    
-    # Compute the sub-intervals for each dimension
-    intervals = [[(infimums[i] + (j-1) * widths[i], infimums[i] + j * widths[i]) for j in 1:strata_count] for i in 1:dim]
-
-    # Create combinations of intervals for each subgroup
-    stratas = []
-    for combo in Iterators.product(intervals...)
-        infimums_group = Float32[elem[1] for elem in combo]
-        supremums_group = Float32[elem[2] for elem in combo]
-        subgroup = [infimums_group, supremums_group]
-        push!(stratas, subgroup)
-    end
-    
-    return stratas
-end
 
 function estimate_∫pdf(l, condition, infimums, supremums)
     if condition isa AbstractMatrix
@@ -105,6 +137,28 @@ function sample(l::LogDensityLayer, conditionvector; montecarlo_n = 100)
     mask = [!isnan(x) && !isinf(x) for x in sample_weights]
 
     return sample_points[mask][gumbel_max_sample(sample_weights[mask])]
+end
+
+function stratified_subgroups(infimums, supremums, strata_count)
+    # Number of dimensions
+    dim = length(supremums)
+       
+    # Calculate width of each stratum for each dimension
+    widths = [(supremums[i] - infimums[i]) / strata_count for i in 1:dim]
+    
+    # Compute the sub-intervals for each dimension
+    intervals = [[(infimums[i] + (j-1) * widths[i], infimums[i] + j * widths[i]) for j in 1:strata_count] for i in 1:dim]
+
+    # Create combinations of intervals for each subgroup
+    stratas = []
+    for combo in Iterators.product(intervals...)
+        infimums_group = Float32[elem[1] for elem in combo]
+        supremums_group = Float32[elem[2] for elem in combo]
+        subgroup = [infimums_group, supremums_group]
+        push!(stratas, subgroup)
+    end
+    
+    return stratas
 end
 
 end
