@@ -6,6 +6,17 @@ module MonteCarloMethods
 
 using StatsBase: mean
 
+export
+	# Structs
+	MonteCarloMethod,
+	CompositeMonteCarloMethod,
+	# Functions
+	estimate_integral,
+	sample,
+	# Functions for creating common MonteCarloMethods
+	uniform_montecarlo,
+	stratified_montecarlo
+
 struct MonteCarloMethod
 	logpdf
 	sample
