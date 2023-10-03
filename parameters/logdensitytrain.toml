@@ -2,17 +2,17 @@
 num_embeddings = 32
 num_hidden_layers = 1
 activation_function = "relu"
+dropout = 0.01
 
 [trainingparameters]
 run_on_gpu = 0
-montecarlo_n = 10 # per dimension
-#etas = [0.1, 0.01, 0.001]
-#epochs_per_eta = [5, 5, 5]
+montecarlo_n = 1
+subgroups_per_dim = 10
 
 [datageneration]
 manifold_dimension = 2
 S_dimension = 32
-distribution_component_count = 100
+distribution_component_count = 10
 output_dimension = 2
 num_obs = 50000
 split_at = 0.9
