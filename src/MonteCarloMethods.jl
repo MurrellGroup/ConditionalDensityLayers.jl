@@ -1,6 +1,6 @@
 # MonteCarlo utils
 #TODO: Add `sample` for `CompositeMonteCarloMethod`.
-#TODO: Add unit tests.
+#TODO: Add sampling of CompositeMonteCarloMethod
 
 module MonteCarloMethods
 
