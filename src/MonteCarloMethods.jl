@@ -17,7 +17,9 @@ export
 	uniform_montecarlo,
 	stratified_montecarlo
 
-struct MonteCarloMethod
+abstract type AbstractMonteCarloMethod end
+
+struct MonteCarloMethod <: AbstractMonteCarloMethod
 	logpdf
 	sample
 end
@@ -50,7 +52,7 @@ function sample(logf, conditionvector, montecarlo_method::MonteCarloMethod, n)
     return sample_points[mask][gumbel_max_sample(sample_weights[mask])]
 end
 
-struct CompositeMonteCarloMethod
+struct CompositeMonteCarloMethod <: AbstractMonteCarloMethod
 	submethods::Tuple
 	weights
 	
