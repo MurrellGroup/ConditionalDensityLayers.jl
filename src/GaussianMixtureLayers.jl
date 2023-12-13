@@ -6,8 +6,7 @@ using ConditionalDensityLayers: AbstractConditionalDensityLayer
 import StatsBase
 
 export GNNLayer
-
-struct GNNLayer <: AbstractConditionalDensityLayer
+struct GNNLayer 
     central_network::Chain
     weight_network::Chain
     centroid_network::Chain
@@ -45,19 +44,20 @@ function GNNLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer
     GNNLayer(central_network, weight_network, centroid_network, std_network, K, N_dims)
 end
 
-function get_gmm_params(g::GNNLayer, conditionvector::AbstractVecOrMat{Float32})
+function (g::GNNLayer)(conditionvector)
+    batch = size(conditionvector)[2:end]
     S_emb = g.central_network(conditionvector)
-    weights = Flux.softmax(reshape(g.weight_network(S_emb), g.K, :),dims = 1)
-    means = reshape(g.centroid_network(S_emb), g.N_dims, g.K, :)
-    stds = reshape(g.std_network(S_emb), g.K, :) .+ 0.01f0 
+    weights = Flux.softmax(reshape(g.weight_network(S_emb), g.K, batch...), dims = 1)
+    means = reshape(g.centroid_network(S_emb), g.N_dims, g.K, batch...)
+    stds = reshape(g.std_network(S_emb), g.K, batch...) .+ 0.01f0 
     return weights, means, stds
 end
-
+#m.layers.DensityTransformer.gmm(randn(256,100,70))
 function NLLIsotropicGMM(x, w, μ, σ)
     sz = size(μ)
     N = sz[1]
     K = sz[2]
-    batch = sz[3]
+    batch = prod(sz[3:end])
     x_broadcast = Flux.unsqueeze(x,dims=2)
     dots = sum((x_broadcast .- μ).*(x_broadcast .- μ), dims=1) 
     logpdfs = -(N/2)*log.(2π .* σ.^2).-(1 ./ (2 .* σ.^2)) .* reshape(dots, sz[2:end]...) 
