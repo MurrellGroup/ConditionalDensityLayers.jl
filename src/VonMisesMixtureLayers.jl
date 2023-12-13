@@ -8,6 +8,7 @@ using Distributions
 import StatsBase
 
 export VMMLayer
+export VonMisesNucleusSample
 
 struct VMMLayer 
     central_network::Chain

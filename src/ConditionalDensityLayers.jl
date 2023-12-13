@@ -4,5 +4,6 @@ module ConditionalDensityLayers
 include("types.jl")
 include("LogDensityLayers.jl")
 include("GaussianMixtureLayers.jl")
+include("VonMisesMixtureLayers.jl")
 
 end
