@@ -7,11 +7,11 @@ using Distributions: log2π
 using Distributions
 import StatsBase
 
-export VMMLayer
+export NVMMMLayer
 export VonMisesNucleusSample
-export VMMSettings
+export NVMMMSettings
 
-struct VMMLayer 
+struct NVMMMLayer 
     central_network::Chain
     weight_network::Chain
     μx_network::Chain
@@ -19,9 +19,9 @@ struct VMMLayer
     K::Int 
     N_dims::Int
 end
-Flux.@functor VMMLayer
+Flux.@functor NVMMMLayer
 
-function VMMSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
+function NVMMMSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
     return (
         K = K, 
         N_dims = N_dims,
@@ -33,9 +33,9 @@ function VMMSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings =
         )
 end
 
-function VMMLayer(settings::NamedTuple)
+function NVMMMLayer(settings::NamedTuple)
     s = settings
-    return VMMLayer(
+    return NVMMMLayer(
         K = s.K,
         N_dims = s.N_dims,
         sizeof_conditionvector = s.sizeof_conditionvector,
@@ -46,11 +46,11 @@ function VMMLayer(settings::NamedTuple)
     )
 end
 
-function VMMLayer(settings_vector::Vector{<: NamedTuple})
-    return [VMMLayer(settings) for settings in settings_vector]
+function NVMMMLayer(settings_vector::Vector{<: NamedTuple})
+    return [NVMMMLayer(settings) for settings in settings_vector]
 end
 
-function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 6, σ = relu, p = 0.05f0)
+function NVMMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 6, σ = relu, p = 0.05f0)
     lays = []
     for i in 2:3*numhiddenlayers
         if i % 3 == 1
@@ -73,7 +73,7 @@ function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembe
     weight_network = Chain(
             Dense(floor(Int, numembeddings) => K)
         )
-    VMMLayer(central_network, weight_network, μx_network, μy_network, K, N_dims)
+    NVMMMLayer(central_network, weight_network, μx_network, μy_network, K, N_dims)
 end
 
 
@@ -123,7 +123,7 @@ Gets the Von-Mises parameters for the mixture from an embedding vector S.
     κ = μx^2 + μy^2, and
     μ = atan(μx, μy)
 """
-function get_vmm_params(v::VMMLayer, S)
+function get_vmm_params(v::NVMMMLayer, S)
     batch = size(S)[2:end]
     S_emb = v.central_network(S)
     N_dims = v.N_dims
@@ -138,7 +138,7 @@ end
 """
 Computes the mixture-NLL loss of the Von-Mises Mixture Layer, given an embedding vector S and true values θ. 
 """
-function loss(v::VMMLayer, θ, S)
+function loss(v::NVMMMLayer, θ, S)
     μ, κ, w = get_vmm_params(v, S)
     return NLLVonMisesMixture(θ, μ, κ, w), (θ,μ)
 end
@@ -169,7 +169,7 @@ end
 """ 
 Given an embedding vector S, generates N_samples samples from the resulting mixtures.
 """
-function VMMSample(v::VMMLayer, S::AbstractVecOrMat{T}; N_samples::Integer = 1000) where T <: Real
+function NVMMMSample(v::NVMMMLayer, S::AbstractVecOrMat{T}; N_samples::Integer = 1000) where T <: Real
     μ, κ, w = get_vmm_params(v, S)
     μ, κ, w = Float64.(μ), Float64.(κ), Float64.(w)
     samps = [stack([VonMisesSample(μ[:,:,i], κ[:,:,i], w[:,i]) for j in 1:N_samples]) for i in axes(S,2)]
@@ -203,7 +203,7 @@ function VonMisesNucleusSample(μ, κ, w; N_samps = 10000, Pd = 0.8, same_dist_s
     return dihs_sampled
 end
 
-function (v::VMMLayer)(S)
+function (v::NVMMMLayer)(S)
     return get_vmm_params(v, S)
 end
 

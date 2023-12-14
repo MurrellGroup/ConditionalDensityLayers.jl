@@ -5,10 +5,10 @@ using LinearAlgebra
 using ConditionalDensityLayers: AbstractConditionalDensityLayer
 import StatsBase
 
-export GNNLayer
-export GNNSettings
+export NGMMLayer
+export NGMMSettings
 
-struct GNNLayer 
+struct NGMMLayer 
     central_network::Chain
     weight_network::Chain
     centroid_network::Chain
@@ -16,9 +16,9 @@ struct GNNLayer
     K::Int 
     N_dims::Int
 end
-Flux.@functor GNNLayer
+Flux.@functor NGMMLayer
 
-function GNNSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
+function NGMMSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
     return (
         K = K, 
         N_dims = N_dims,
@@ -32,9 +32,9 @@ end
 
 
 
-function GNNLayer(settings::NamedTuple)
+function NGMMLayer(settings::NamedTuple)
     s = settings
-    return GNNLayer(
+    return NGMMLayer(
         K = s.K,
         N_dims = s.N_dims,
         sizeof_conditionvector = s.sizeof_conditionvector,
@@ -45,11 +45,11 @@ function GNNLayer(settings::NamedTuple)
     )
 end
 
-function GNNLayer(settings_vector::Vector{<: NamedTuple})
-    return [GNNLayer(settings) for settings in settings_vector]
+function NGMMLayer(settings_vector::Vector{<: NamedTuple})
+    return [NGMMLayer(settings) for settings in settings_vector]
 end
 
-function GNNLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 20, σ = relu, p = 0.05f0)
+function NGMMLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 20, σ = relu, p = 0.05f0)
     lays = []
     for i in 2:3*numhiddenlayers
         # alternate dense -> layernorm -> dense -> dropout -> ...
@@ -73,10 +73,10 @@ function GNNLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer
     std_network = Chain(
             Dense(numembeddings => K, softplus)
         )
-    GNNLayer(central_network, weight_network, centroid_network, std_network, K, N_dims)
+    NGMMLayer(central_network, weight_network, centroid_network, std_network, K, N_dims)
 end
 
-function (g::GNNLayer)(conditionvector)
+function (g::NGMMLayer)(conditionvector)
     batch = size(conditionvector)[2:end]
     S_emb = g.central_network(conditionvector)
     weights = Flux.softmax(reshape(g.weight_network(S_emb), g.K, batch...), dims = 1)
@@ -99,7 +99,7 @@ function NLLIsotropicGMM(x, w, μ, σ)
     return -sum(log_likelihood)./(K .* batch)
 end
 
-function loss(g::GNNLayer, Y::AbstractVecOrMat{Float32}, conditionvector::AbstractVecOrMat{Float32})
+function loss(g::NGMMLayer, Y::AbstractVecOrMat{Float32}, conditionvector::AbstractVecOrMat{Float32})
     w, μ, σ = get_gmm_params(g, conditionvector)
     return NLLIsotropicGMM(Y, w, μ, σ)
 end
