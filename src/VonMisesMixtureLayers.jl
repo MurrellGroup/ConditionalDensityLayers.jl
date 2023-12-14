@@ -46,6 +46,10 @@ function VMMLayer(settings::NamedTuple)
     )
 end
 
+function VMMLayer(settings_vector::Vector{<: NamedTuple})
+    return [VMMLayer(settings) for settings in settings_vector]
+end
+
 function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 6, σ = relu, p = 0.05f0)
     lays = []
     for i in 2:3*numhiddenlayers
@@ -71,7 +75,6 @@ function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembe
         )
     VMMLayer(central_network, weight_network, μx_network, μy_network, K, N_dims)
 end
-VMMLayer(K=10, N_dims=3, sizeof_conditionvector=3)
 
 
 # Degree 6 polynomial approximations of I₀(x), where 0 ≤ x < 7.5 and x ≥ 7.5 for small and large respectively.

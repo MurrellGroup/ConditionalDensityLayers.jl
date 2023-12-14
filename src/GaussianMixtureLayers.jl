@@ -30,6 +30,8 @@ function GNNSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings =
         )
 end
 
+
+
 function GNNLayer(settings::NamedTuple)
     s = settings
     return GNNLayer(
@@ -41,6 +43,10 @@ function GNNLayer(settings::NamedTuple)
         σ = s.σ,
         p = s.p
     )
+end
+
+function GNNLayer(settings_vector::Vector{<: NamedTuple})
+    return [GNNLayer(settings) for settings in settings_vector]
 end
 
 function GNNLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 20, σ = relu, p = 0.05f0)
