@@ -6,6 +6,8 @@ using ConditionalDensityLayers: AbstractConditionalDensityLayer
 import StatsBase
 
 export GNNLayer
+export GNNSettings
+
 struct GNNLayer 
     central_network::Chain
     weight_network::Chain
@@ -14,8 +16,32 @@ struct GNNLayer
     K::Int 
     N_dims::Int
 end
-
 Flux.@functor GNNLayer
+
+function GNNSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
+    return (
+        K = K, 
+        N_dims = N_dims,
+        sizeof_conditionvector = sizeof_conditionvector,
+        numembeddings = numembeddings,
+        numhiddenlayers = numhiddenlayers, 
+        σ = σ,
+        p = p
+        )
+end
+
+function GNNLayer(settings::NamedTuple)
+    s = settings
+    return GNNLayer(
+        K = s.K,
+        N_dims = s.N_dims,
+        sizeof_conditionvector = s.sizeof_conditionvector,
+        numembeddings = s.numembeddings,
+        numhiddenlayers = s.numhiddenlayers,
+        σ = s.σ,
+        p = s.p
+    )
+end
 
 function GNNLayer(; K::Integer, N_dims::Integer, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 20, σ = relu, p = 0.05f0)
     lays = []

@@ -9,6 +9,7 @@ import StatsBase
 
 export VMMLayer
 export VonMisesNucleusSample
+export VMMSettings
 
 struct VMMLayer 
     central_network::Chain
@@ -18,10 +19,34 @@ struct VMMLayer
     K::Int 
     N_dims::Int
 end
-
 Flux.@functor VMMLayer
 
-function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 20, σ = relu, p = 0.05f0)
+function VMMSettings(sizeof_conditionvector; K = 20, N_dims = 3, numembeddings = 256, numhiddenlayers = 6, σ = relu, p = 0.05f0)
+    return (
+        K = K, 
+        N_dims = N_dims,
+        sizeof_conditionvector = sizeof_conditionvector,
+        numembeddings = numembeddings,
+        numhiddenlayers = numhiddenlayers, 
+        σ = σ,
+        p = p
+        )
+end
+
+function VMMLayer(settings::NamedTuple)
+    s = settings
+    return VMMLayer(
+        K = s.K,
+        N_dims = s.N_dims,
+        sizeof_conditionvector = s.sizeof_conditionvector,
+        numembeddings = s.numembeddings,
+        numhiddenlayers = s.numhiddenlayers,
+        σ = s.σ,
+        p = s.p
+    )
+end
+
+function VMMLayer(; K::Integer, N_dims, sizeof_conditionvector::Integer, numembeddings::Integer = 256, numhiddenlayers::Integer = 6, σ = relu, p = 0.05f0)
     lays = []
     for i in 2:3*numhiddenlayers
         if i % 3 == 1
